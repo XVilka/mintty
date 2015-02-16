@@ -519,14 +519,14 @@ win_text(int x, int y, wchar *text, int len, uint attr, int lattr)
   another_font(nfont);
   
   bool force_manual_underline = false;
-  if (!fonts[nfont]) {
+  if ((nfont < FONT_MAXNO) && (!fonts[nfont])) {
     if (nfont & FONT_UNDERLINE)
       force_manual_underline = true;
     // Don't force manual bold, it could be bad news.
     nfont &= ~(FONT_BOLD | FONT_UNDERLINE);
   }
   another_font(nfont);
-  if (!fonts[nfont])
+  if ((nfont < FONT_MAXNO) && (!fonts[nfont]))
     nfont = FONT_NORMAL;
 
   colour_i fgi = (attr & ATTR_FGMASK) >> ATTR_FGSHIFT;
