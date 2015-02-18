@@ -447,10 +447,17 @@ do_sgr(void)
         attr |= ((term.csi_argv[i] - 90 + 8) << ATTR_FGSHIFT);
       when 38: /* 256-colour foreground */
         if (i + 2 < argc && term.csi_argv[i + 1] == 5) {
+		  term.curs.rgb = false;
           attr &= ~ATTR_FGMASK;
           attr |= ((term.csi_argv[i + 2] & 0xFF) << ATTR_FGSHIFT);
           i += 2;
-        }
+        /* RGB color, 24bit */
+		} else if (i + 4 < argc && term.csi_argv[i + 1] == 2) {
+			term.curs.rgb = true;
+			term.curs.cinfo.fg = term.csi_argv[i + 2] << 16;
+			term.curs.cinfo.fg = term.curs.cinfo.fg + (term.csi_argv[i + 3] << 8);
+			term.curs.cinfo.fg = term.curs.cinfo.fg + term.csi_argv[i + 4];
+		}
       when 39: /* default foreground */
         attr &= ~ATTR_FGMASK;
         attr |= ATTR_DEFFG;
@@ -462,10 +469,17 @@ do_sgr(void)
         attr |= ((term.csi_argv[i] - 100 + 8) << ATTR_BGSHIFT);
       when 48: /* 256-colour background */
         if (i + 2 < argc && term.csi_argv[i + 1] == 5) {
+		  term.curs.rgb = false;
           attr &= ~ATTR_BGMASK;
           attr |= ((term.csi_argv[i + 2] & 0xFF) << ATTR_BGSHIFT);
           i += 2;
-        }
+        /* RGB color, 24bit */
+		} else if (i + 4 < argc && term.csi_argv[i + 1] == 2) {
+			term.curs.rgb = true;
+			term.curs.cinfo.bg = term.csi_argv[i + 2] << 16;
+			term.curs.cinfo.bg = term.curs.cinfo.bg + (term.csi_argv[i + 3] << 8);
+			term.curs.cinfo.bg = term.curs.cinfo.bg + term.csi_argv[i + 4];
+		}
       when 49: /* default background */
         attr &= ~ATTR_BGMASK;
         attr |= ATTR_DEFBG;

@@ -207,6 +207,18 @@ typedef struct belltime {
   uint ticks;
 } belltime;
 
+// Colour values.
+typedef enum {
+	RGB_RED = 0, RGB_GREEN = 1, RGB_BLUE = 2
+} rgb_colors;
+
+typedef ulong lcolour;
+
+typedef struct {
+	lcolour fg;
+	lcolour bg;
+} colour_info;
+
 typedef struct {
   short x, y;
   uint attr;
@@ -215,8 +227,10 @@ typedef struct {
   bool wrapnext;
   bool utf;
   bool g1;
+  bool rgb;
   term_cset csets[2];
   uchar oem_acs;
+  colour_info cinfo;
 } term_cursor;
 
 struct term {

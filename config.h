@@ -12,10 +12,6 @@ enum { RC_MENU, RC_PASTE, RC_EXTEND };
 enum { TR_OFF = 0, TR_LOW = 16, TR_MEDIUM = 32, TR_HIGH = 48, TR_GLASS = -1 };
 
 
-// Colour values.
-
-typedef uint colour;
-
 enum { DEFAULT_COLOUR = UINT_MAX };
 
 static inline colour

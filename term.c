@@ -780,8 +780,12 @@ term_paint(void)
       }
 
       if (break_run) {
-        if (dirty_run && textlen)
-          win_text(start, i, text, textlen, attr, line->attr);
+        if (dirty_run && textlen) {
+		  if (term.curs.rgb)
+			win_text(start, i, text, textlen, attr, line->attr, &term.curs.cinfo);
+		  else
+		    win_text(start, i, text, textlen, attr, line->attr, NULL);
+		}
         start = j;
         textlen = 0;
         attr = tattr;
@@ -825,8 +829,12 @@ term_paint(void)
         copy_termchar(displine, j, d);
       }
     }
-    if (dirty_run && textlen)
-      win_text(start, i, text, textlen, attr, line->attr);
+    if (dirty_run && textlen) {
+	  if (term.curs.rgb)
+	    win_text(start, i, text, textlen, attr, line->attr, &term.curs.cinfo);
+	  else
+		win_text(start, i, text, textlen, attr, line->attr, NULL);
+	}
     release_line(line);
   }
 

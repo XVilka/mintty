@@ -479,7 +479,13 @@ win_set_ime_open(bool open)
   }
 }
 
-
+/*
+typedef {
+	color_fg
+	color_bg
+}
+colour_info* cinfo
+*/
 /*
  * Draw a line of text in the window, at given character
  * coordinates, in given attributes.
@@ -487,7 +493,7 @@ win_set_ime_open(bool open)
  * We are allowed to fiddle with the contents of `text'.
  */
 void
-win_text(int x, int y, wchar *text, int len, uint attr, int lattr)
+win_text(int x, int y, wchar *text, int len, uint attr, int lattr, colour_info *cinfo)
 {
   lattr &= LATTR_MODE;
   int char_width = font_width * (1 + (lattr != LATTR_NORM));
@@ -517,7 +523,7 @@ win_text(int x, int y, wchar *text, int len, uint attr, int lattr)
   if (und_mode == UND_FONT && (attr & ATTR_UNDER))
     nfont |= FONT_UNDERLINE;
   another_font(nfont);
-  
+
   bool force_manual_underline = false;
   if ((nfont < FONT_MAXNO) && (!fonts[nfont])) {
     if (nfont & FONT_UNDERLINE)
@@ -529,38 +535,47 @@ win_text(int x, int y, wchar *text, int len, uint attr, int lattr)
   if ((nfont < FONT_MAXNO) && (!fonts[nfont]))
     nfont = FONT_NORMAL;
 
-  colour_i fgi = (attr & ATTR_FGMASK) >> ATTR_FGSHIFT;
-  colour_i bgi = (attr & ATTR_BGMASK) >> ATTR_BGSHIFT;
+  // Store all colors in RGB format.
+  lcolour fg = 0;
+  lcolour bg = 0;
 
-  if (term.rvideo) {
-    if (fgi >= 256)
-      fgi ^= 2;
-    if (bgi >= 256)
-      bgi ^= 2;
+  if (cinfo == NULL) {
+	colour_i fgi = (attr & ATTR_FGMASK) >> ATTR_FGSHIFT;
+	colour_i bgi = (attr & ATTR_BGMASK) >> ATTR_BGSHIFT;
+
+	if (term.rvideo) {
+		if (fgi >= 256)
+			fgi ^= 2;
+		if (bgi >= 256)
+			bgi ^= 2;
+	}
+	if (attr & ATTR_BOLD && cfg.bold_as_colour) {
+		if (fgi < 8)
+			fgi |= 8;
+		else if (fgi >= 256 && !cfg.bold_as_font)
+			fgi |= 1;
+	}
+	if (attr & ATTR_BLINK) {
+		if (bgi < 8)
+			bgi |= 8;
+		else if (bgi >= 256)
+			bgi |= 1;
+	}
+	fg = colours[fgi];
+	bg = colours[bgi];
+  } else {
+	fg = cinfo->fg;
+	bg = cinfo->bg;
   }
-  if (attr & ATTR_BOLD && cfg.bold_as_colour) {
-    if (fgi < 8)
-      fgi |= 8;
-    else if (fgi >= 256 && !cfg.bold_as_font)
-      fgi |= 1;
-  }
-  if (attr & ATTR_BLINK) {
-    if (bgi < 8)
-      bgi |= 8;
-    else if (bgi >= 256)
-      bgi |= 1;
-  }
-  
-  colour fg = colours[fgi];
-  colour bg = colours[bgi];
-  
+
   if (attr & ATTR_DIM) {
     fg = (fg & 0xFEFEFEFE) >> 1; // Halve the brightness.
-    if (!cfg.bold_as_colour || fgi >= 256)
+    //if (!cfg.bold_as_colour || fgi >= 256)
+	if (!cfg.bold_as_colour)
       fg += (bg & 0xFEFEFEFE) >> 1; // Blend with background.
   }
   if (attr & ATTR_REVERSE) {
-    colour t = fg; fg = bg; bg = t;
+    lcolour t = fg; fg = bg; bg = t;
   }
   if (attr & ATTR_INVISIBLE)
     fg = bg;
