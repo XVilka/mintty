@@ -422,8 +422,11 @@ do_sgr(void)
   uint argc = term.csi_argc;
   uint attr = term.curs.attr;
   for (uint i = 0; i < argc; i++) {
+	fprintf(stderr, "term.csi_argv[%d] = %d\n", i, term.csi_argv[i]);
     switch (term.csi_argv[i]) {
-      when 0: attr = ATTR_DEFAULT | (attr & ATTR_PROTECTED);
+      when 0:
+		attr = ATTR_DEFAULT | (attr & ATTR_PROTECTED);
+		term.curs.rgb = false;
       when 1: attr |= ATTR_BOLD;
       when 2: attr |= ATTR_DIM;
       when 4: attr |= ATTR_UNDER;
@@ -457,6 +460,7 @@ do_sgr(void)
 			term.curs.cinfo.fg = term.csi_argv[i + 2] << 16;
 			term.curs.cinfo.fg = term.curs.cinfo.fg + (term.csi_argv[i + 3] << 8);
 			term.curs.cinfo.fg = term.curs.cinfo.fg + term.csi_argv[i + 4];
+			i += 4;
 		}
       when 39: /* default foreground */
         attr &= ~ATTR_FGMASK;
@@ -479,10 +483,12 @@ do_sgr(void)
 			term.curs.cinfo.bg = term.csi_argv[i + 2] << 16;
 			term.curs.cinfo.bg = term.curs.cinfo.bg + (term.csi_argv[i + 3] << 8);
 			term.curs.cinfo.bg = term.curs.cinfo.bg + term.csi_argv[i + 4];
+			i += 4;
 		}
       when 49: /* default background */
         attr &= ~ATTR_BGMASK;
         attr |= ATTR_DEFBG;
+		term.curs.rgb = false;
     }
   }
   term.curs.attr = attr;
